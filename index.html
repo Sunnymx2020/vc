@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Video Chat App</title>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -17,12 +17,14 @@
             --light: #f8f9fa;
             --dark: #212529;
             --border-radius: 12px;
+            --mobile-breakpoint: 768px;
         }
         
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            -webkit-tap-highlight-color: transparent;
         }
         
         body {
@@ -45,31 +47,42 @@
         
         header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
         
         h1 {
-            font-size: 2.2rem;
-            margin-bottom: 10px;
+            font-size: clamp(1.5rem, 5vw, 2.2rem);
+            margin-bottom: 8px;
             color: var(--primary);
         }
         
         .status {
-            font-size: 1rem;
+            font-size: clamp(0.9rem, 3vw, 1rem);
             color: var(--gray);
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         
         .video-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 30px;
+            gap: 15px;
+            margin-bottom: 20px;
+            height: calc(50vh - 60px);
+            min-height: 200px;
         }
         
         @media (max-width: 768px) {
             .video-container {
                 grid-template-columns: 1fr;
+                height: auto;
+            }
+            
+            .video-box {
+                aspect-ratio: 16/9 !important;
+            }
+            
+            .controls {
+                padding: 15px !important;
             }
         }
         
@@ -78,19 +91,20 @@
             background: var(--dark);
             border-radius: var(--border-radius);
             overflow: hidden;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             aspect-ratio: 16/9;
         }
         
         .video-box h3 {
             position: absolute;
-            bottom: 10px;
-            left: 10px;
+            bottom: 8px;
+            left: 8px;
             color: white;
             background: rgba(0,0,0,0.5);
-            padding: 5px 10px;
+            padding: 4px 8px;
             border-radius: 4px;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
+            z-index: 2;
         }
         
         video {
@@ -98,25 +112,42 @@
             height: 100%;
             object-fit: cover;
             display: block;
+            transform: scaleX(-1);
+        }
+        
+        #localVideo {
+            transform: scaleX(-1);
+        }
+        
+        #remoteVideo {
+            transform: none;
         }
         
         .controls {
             background: white;
-            padding: 25px;
+            padding: 20px;
             border-radius: var(--border-radius);
             box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         
         .id-container {
             display: flex;
-            align-items: center;
-            margin-bottom: 20px;
+            flex-direction: column;
+            margin-bottom: 15px;
+        }
+        
+        @media (min-width: 480px) {
+            .id-container {
+                flex-direction: row;
+                align-items: center;
+            }
         }
         
         .id-label {
             font-weight: 500;
             margin-right: 10px;
+            margin-bottom: 5px;
         }
         
         .id-value {
@@ -127,10 +158,16 @@
             flex: 1;
             overflow: hidden;
             text-overflow: ellipsis;
+            margin-bottom: 8px;
+        }
+        
+        @media (min-width: 480px) {
+            .id-value {
+                margin-bottom: 0;
+            }
         }
         
         .copy-btn {
-            margin-left: 10px;
             background: var(--gray);
             color: white;
             border: none;
@@ -138,6 +175,15 @@
             border-radius: 4px;
             cursor: pointer;
             transition: background 0.2s;
+            margin-left: 0;
+            width: 100%;
+        }
+        
+        @media (min-width: 480px) {
+            .copy-btn {
+                margin-left: 10px;
+                width: auto;
+            }
         }
         
         .copy-btn:hover {
@@ -146,31 +192,62 @@
         
         .input-group {
             display: flex;
-            margin-bottom: 20px;
+            flex-direction: column;
+            margin-bottom: 15px;
+        }
+        
+        @media (min-width: 480px) {
+            .input-group {
+                flex-direction: row;
+            }
         }
         
         input {
             flex: 1;
             padding: 12px 15px;
             border: 1px solid #ddd;
-            border-radius: var(--border-radius) 0 0 var(--border-radius);
+            border-radius: var(--border-radius);
             font-size: 1rem;
             outline: none;
             transition: border 0.2s;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+        
+        @media (min-width: 480px) {
+            input {
+                border-radius: var(--border-radius) 0 0 var(--border-radius);
+                margin-bottom: 0;
+                width: auto;
+            }
         }
         
         input:focus {
             border-color: var(--primary);
         }
         
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+        
         .btn {
             padding: 12px 20px;
             border: none;
-            border-radius: 0 var(--border-radius) var(--border-radius) 0;
+            border-radius: var(--border-radius);
             font-size: 1rem;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s;
+            flex: 1;
+            text-align: center;
+        }
+        
+        @media (min-width: 480px) {
+            .btn {
+                flex: none;
+                border-radius: 0 var(--border-radius) var(--border-radius) 0;
+            }
         }
         
         .btn-primary {
@@ -198,16 +275,16 @@
         
         .call-status {
             text-align: center;
-            font-size: 1.1rem;
-            margin-top: 20px;
+            font-size: clamp(0.9rem, 3vw, 1.1rem);
+            margin-top: 15px;
             min-height: 24px;
         }
         
         footer {
             text-align: center;
-            margin-top: 40px;
+            margin-top: 20px;
             color: var(--gray);
-            font-size: 0.9rem;
+            font-size: 0.8rem;
         }
         
         .notification {
@@ -222,10 +299,44 @@
             transform: translateX(200%);
             transition: transform 0.3s ease-out;
             z-index: 1000;
+            max-width: 90%;
         }
         
         .notification.show {
             transform: translateX(0);
+        }
+        
+        /* Mobile specific styles */
+        @media (max-width: 480px) {
+            body {
+                padding: 15px;
+            }
+            
+            .video-container {
+                margin-bottom: 15px;
+            }
+            
+            .controls {
+                padding: 15px;
+            }
+            
+            .btn {
+                padding: 12px 15px;
+                font-size: 0.9rem;
+            }
+        }
+        
+        /* Orientation change handling */
+        @media screen and (orientation: portrait) {
+            .video-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media screen and (orientation: landscape) and (max-height: 500px) {
+            .video-container {
+                height: 60vh;
+            }
         }
     </style>
 </head>
@@ -238,11 +349,11 @@
         
         <div class="video-container">
             <div class="video-box">
-                <video id="localVideo" autoplay muted></video>
+                <video id="localVideo" autoplay muted playsinline></video>
                 <h3>You</h3>
             </div>
             <div class="video-box">
-                <video id="remoteVideo" autoplay></video>
+                <video id="remoteVideo" autoplay playsinline></video>
                 <h3>Friend</h3>
             </div>
         </div>
@@ -255,16 +366,18 @@
             </div>
             
             <div class="input-group">
-                <input type="text" id="peerIdInput" placeholder="Enter your friend's ID">
-                <button class="btn btn-primary" id="callButton">Start Call</button>
-                <button class="btn btn-danger" id="endButton" disabled>End Call</button>
+                <input type="text" id="peerIdInput" placeholder="Enter friend's ID">
+                <div class="btn-group">
+                    <button class="btn btn-primary" id="callButton">Start Call</button>
+                    <button class="btn btn-danger" id="endButton" disabled>End Call</button>
+                </div>
             </div>
             
             <div class="call-status" id="callStatus"></div>
         </div>
         
         <footer>
-            <p>This peer-to-peer video chat works directly in your browser. No servers process your video/audio.</p>
+            <p>This peer-to-peer video chat works directly in your browser.</p>
         </footer>
     </div>
     
@@ -302,27 +415,81 @@
         });
         
         // Get user media (camera and microphone)
-        navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+        // Mobile-friendly constraints
+        const constraints = {
+            video: {
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+                facingMode: 'user'
+            },
+            audio: true
+        };
+        
+        navigator.mediaDevices.getUserMedia(constraints)
             .then(stream => {
                 localStream = stream;
                 document.getElementById('localVideo').srcObject = stream;
                 updateCallStatus('Camera/mic ready');
+                
+                // Handle orientation changes
+                window.addEventListener('orientationchange', handleResize);
+                window.addEventListener('resize', handleResize);
             })
             .catch(err => {
                 console.error('Error accessing media devices:', err);
-                showError('Could not access camera/microphone. Please check permissions.');
-                callButton.disabled = true;
+                
+                // Try with less restrictive constraints if first attempt fails
+                navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+                    .then(stream => {
+                        localStream = stream;
+                        document.getElementById('localVideo').srcObject = stream;
+                        updateCallStatus('Camera/mic ready');
+                    })
+                    .catch(err => {
+                        showError('Could not access camera/microphone. Please check permissions.');
+                        callButton.disabled = true;
+                    });
             });
+        
+        function handleResize() {
+            // This helps mobile browsers properly display video after orientation change
+            const videos = document.querySelectorAll('video');
+            videos.forEach(video => {
+                video.style.width = '100%';
+                video.style.height = '100%';
+            });
+        }
         
         // Copy ID to clipboard
         copyButton.addEventListener('click', () => {
             const id = myIdElement.textContent;
-            navigator.clipboard.writeText(id).then(() => {
-                showNotification();
-            }).catch(err => {
-                console.error('Failed to copy:', err);
-            });
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(id).then(() => {
+                    showNotification();
+                }).catch(err => {
+                    console.error('Failed to copy:', err);
+                    // Fallback for older browsers
+                    copyToClipboardFallback(id);
+                });
+            } else {
+                copyToClipboardFallback(id);
+            }
         });
+        
+        function copyToClipboardFallback(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';  // Prevent scrolling to bottom
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                showNotification();
+            } catch (err) {
+                console.error('Fallback copy failed:', err);
+            }
+            document.body.removeChild(textarea);
+        }
         
         // Start call button
         callButton.addEventListener('click', () => {
@@ -353,14 +520,22 @@
         
         // Answer incoming calls
         peer.on('call', (call) => {
-            const acceptCall = confirm(`Incoming call from ${call.peer}. Accept?`);
+            if (isInCall) {
+                call.close();
+                return;
+            }
+            
+            // Mobile-friendly confirmation
+            updateCallStatus('Incoming call from ' + call.peer);
+            const acceptCall = confirm(`Incoming call from ${call.peer}\n\nAccept?`);
+            
             if (acceptCall) {
-                updateCallStatus('Incoming call from ' + call.peer);
                 call.answer(localStream);
                 setupCallHandlers(call);
                 toggleCallButtons(true);
             } else {
                 call.close();
+                updateCallStatus('Call declined');
             }
         });
         
@@ -372,6 +547,9 @@
             call.on('stream', (remoteStream) => {
                 document.getElementById('remoteVideo').srcObject = remoteStream;
                 updateCallStatus('Connected to ' + call.peer);
+                
+                // Auto-rotate video on mobile if needed
+                handleResize();
             });
             
             call.on('close', () => {
@@ -412,6 +590,7 @@
         }
         
         function showNotification() {
+            notification.textContent = 'Copied to clipboard!';
             notification.classList.add('show');
             setTimeout(() => {
                 notification.classList.remove('show');
@@ -426,6 +605,18 @@
                 localStream.getTracks().forEach(track => track.stop());
             }
         });
+        
+        // Handle mobile back button (Android)
+        document.addEventListener('backbutton', handleBackButton, false);
+        
+        function handleBackButton() {
+            if (isInCall) {
+                if (confirm('End current call?')) {
+                    if (currentCall) currentCall.close();
+                    handleCallEnd();
+                }
+            }
+        }
     </script>
 </body>
 </html>
