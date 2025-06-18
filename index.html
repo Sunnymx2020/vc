@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Video Chat App</title>
+    <title>Premium Video Chat</title>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary: #4361ee;
@@ -13,6 +14,7 @@
             --danger: #f72585;
             --danger-dark: #e5177b;
             --success: #4cc9f0;
+            --warning: #f8961e;
             --gray: #6c757d;
             --light: #f8f9fa;
             --dark: #212529;
@@ -43,6 +45,8 @@
             margin: 0 auto;
             width: 100%;
             flex: 1;
+            display: flex;
+            flex-direction: column;
         }
         
         header {
@@ -62,6 +66,24 @@
             margin-bottom: 15px;
         }
         
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            flex: 1;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .video-section {
+            display: flex;
+            flex-direction: column;
+        }
+        
         .video-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -79,10 +101,6 @@
             
             .video-box {
                 aspect-ratio: 16/9 !important;
-            }
-            
-            .controls {
-                padding: 15px !important;
             }
         }
         
@@ -105,7 +123,18 @@
             border-radius: 4px;
             font-size: 0.8rem;
             z-index: 2;
+            display: flex;
+            align-items: center;
         }
+        
+        .connection-quality {
+            margin-left: 5px;
+            font-size: 0.7rem;
+        }
+        
+        .good-connection { color: #4ade80; }
+        .fair-connection { color: #fbbf24; }
+        .poor-connection { color: #f87171; }
         
         video {
             width: 100%;
@@ -121,6 +150,135 @@
         
         #remoteVideo {
             transform: none;
+        }
+        
+        .video-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .control-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: white;
+            border: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--dark);
+            transition: all 0.2s;
+        }
+        
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        
+        .control-btn:active {
+            transform: translateY(0);
+        }
+        
+        .control-btn i {
+            font-size: 1.2rem;
+        }
+        
+        .control-btn.primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .control-btn.danger {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .control-btn.warning {
+            background: var(--warning);
+            color: white;
+        }
+        
+        .control-btn:disabled {
+            background: #e9ecef;
+            color: #adb5bd;
+            cursor: not-allowed;
+        }
+        
+        .chat-section {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .chat-header {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+            font-weight: 500;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .message {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            word-wrap: break-word;
+        }
+        
+        .received {
+            align-self: flex-start;
+            background: #e9ecef;
+            border-bottom-left-radius: 5px;
+        }
+        
+        .sent {
+            align-self: flex-end;
+            background: var(--primary);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .chat-input {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .chat-input input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius) 0 0 var(--border-radius);
+            font-size: 1rem;
+            outline: none;
+        }
+        
+        .chat-input button {
+            padding: 0 20px;
+            border: none;
+            border-radius: 0 var(--border-radius) var(--border-radius) 0;
+            background: var(--primary);
+            color: white;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .chat-input button:hover {
+            background: var(--primary-dark);
         }
         
         .controls {
@@ -226,53 +384,6 @@
             border-color: var(--primary);
         }
         
-        .btn-group {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .btn {
-            padding: 12px 20px;
-            border: none;
-            border-radius: var(--border-radius);
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            flex: 1;
-            text-align: center;
-        }
-        
-        @media (min-width: 480px) {
-            .btn {
-                flex: none;
-                border-radius: 0 var(--border-radius) var(--border-radius) 0;
-            }
-        }
-        
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background: var(--primary-dark);
-        }
-        
-        .btn-danger {
-            background: var(--danger);
-            color: white;
-        }
-        
-        .btn-danger:hover {
-            background: var(--danger-dark);
-        }
-        
-        .btn:disabled {
-            background: #cccccc;
-            cursor: not-allowed;
-        }
-        
         .call-status {
             text-align: center;
             font-size: clamp(0.9rem, 3vw, 1.1rem);
@@ -319,11 +430,6 @@
             .controls {
                 padding: 15px;
             }
-            
-            .btn {
-                padding: 12px 15px;
-                font-size: 0.9rem;
-            }
         }
         
         /* Orientation change handling */
@@ -343,41 +449,73 @@
 <body>
     <div class="container">
         <header>
-            <h1>Peer Video Chat</h1>
-            <p class="status">Secure peer-to-peer video calling</p>
+            <h1>Premium Video Chat</h1>
+            <p class="status">Secure peer-to-peer video calling with chat</p>
         </header>
         
-        <div class="video-container">
-            <div class="video-box">
-                <video id="localVideo" autoplay muted playsinline></video>
-                <h3>You</h3>
-            </div>
-            <div class="video-box">
-                <video id="remoteVideo" autoplay playsinline></video>
-                <h3>Friend</h3>
-            </div>
-        </div>
-        
-        <div class="controls">
-            <div class="id-container">
-                <span class="id-label">Your ID:</span>
-                <span class="id-value" id="my-id">Generating...</span>
-                <button class="copy-btn" id="copy-btn">Copy</button>
-            </div>
-            
-            <div class="input-group">
-                <input type="text" id="peerIdInput" placeholder="Enter friend's ID">
-                <div class="btn-group">
-                    <button class="btn btn-primary" id="callButton">Start Call</button>
-                    <button class="btn btn-danger" id="endButton" disabled>End Call</button>
+        <div class="main-content">
+            <div class="video-section">
+                <div class="video-container">
+                    <div class="video-box">
+                        <video id="localVideo" autoplay muted playsinline></video>
+                        <h3>You <span class="connection-quality" id="localConnectionQuality"></span></h3>
+                    </div>
+                    <div class="video-box">
+                        <video id="remoteVideo" autoplay playsinline></video>
+                        <h3>Friend <span class="connection-quality" id="remoteConnectionQuality"></span></h3>
+                    </div>
+                </div>
+                
+                <div class="video-controls">
+                    <button class="control-btn primary" id="callButton" title="Start Call">
+                        <i class="fas fa-phone"></i>
+                    </button>
+                    <button class="control-btn danger" id="endButton" disabled title="End Call">
+                        <i class="fas fa-phone-slash"></i>
+                    </button>
+                    <button class="control-btn" id="screenShareButton" title="Share Screen">
+                        <i class="fas fa-desktop"></i>
+                    </button>
+                    <button class="control-btn" id="muteButton" title="Mute">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                    <button class="control-btn" id="videoButton" title="Turn Off Video">
+                        <i class="fas fa-video"></i>
+                    </button>
+                </div>
+                
+                <div class="controls">
+                    <div class="id-container">
+                        <span class="id-label">Your ID:</span>
+                        <span class="id-value" id="my-id">Generating...</span>
+                        <button class="copy-btn" id="copy-btn">Copy</button>
+                    </div>
+                    
+                    <div class="input-group">
+                        <input type="text" id="peerIdInput" placeholder="Enter friend's ID">
+                        <div class="btn-group">
+                            <button class="btn btn-primary" id="startCallBtn">Start Call</button>
+                        </div>
+                    </div>
+                    
+                    <div class="call-status" id="callStatus">Ready to connect</div>
                 </div>
             </div>
             
-            <div class="call-status" id="callStatus"></div>
+            <div class="chat-section">
+                <div class="chat-header">Chat Messages</div>
+                <div class="chat-messages" id="chatMessages">
+                    <!-- Messages will appear here -->
+                </div>
+                <div class="chat-input">
+                    <input type="text" id="messageInput" placeholder="Type a message...">
+                    <button id="sendMessageBtn"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
         </div>
         
         <footer>
-            <p>This peer-to-peer video chat works directly in your browser.</p>
+            <p>This peer-to-peer video chat works directly in your browser. No servers process your video/audio.</p>
         </footer>
     </div>
     
@@ -387,11 +525,20 @@
         // DOM Elements
         const callButton = document.getElementById('callButton');
         const endButton = document.getElementById('endButton');
+        const screenShareButton = document.getElementById('screenShareButton');
+        const muteButton = document.getElementById('muteButton');
+        const videoButton = document.getElementById('videoButton');
         const peerIdInput = document.getElementById('peerIdInput');
         const myIdElement = document.getElementById('my-id');
         const copyButton = document.getElementById('copy-btn');
         const callStatus = document.getElementById('callStatus');
         const notification = document.getElementById('notification');
+        const chatMessages = document.getElementById('chatMessages');
+        const messageInput = document.getElementById('messageInput');
+        const sendMessageBtn = document.getElementById('sendMessageBtn');
+        const startCallBtn = document.getElementById('startCallBtn');
+        const localConnectionQuality = document.getElementById('localConnectionQuality');
+        const remoteConnectionQuality = document.getElementById('remoteConnectionQuality');
         
         // Generate random peer ID
         const peer = new Peer(Math.random().toString(36).substring(2, 8));
@@ -399,12 +546,17 @@
         let localStream;
         let currentCall;
         let isInCall = false;
+        let isMuted = false;
+        let isVideoOff = false;
+        let dataChannel;
+        let connectionInterval;
         
         // Show our peer ID when ready
         peer.on('open', (id) => {
             console.log('My peer ID is: ' + id);
             myIdElement.textContent = id;
             callButton.disabled = false;
+            startCallBtn.disabled = false;
             updateCallStatus('Ready to call');
         });
         
@@ -415,7 +567,6 @@
         });
         
         // Get user media (camera and microphone)
-        // Mobile-friendly constraints
         const constraints = {
             video: {
                 width: { ideal: 1280 },
@@ -431,28 +582,45 @@
                 document.getElementById('localVideo').srcObject = stream;
                 updateCallStatus('Camera/mic ready');
                 
+                // Set up mute/video toggle handlers
+                setupMediaToggles(stream);
+                
                 // Handle orientation changes
                 window.addEventListener('orientationchange', handleResize);
                 window.addEventListener('resize', handleResize);
             })
             .catch(err => {
                 console.error('Error accessing media devices:', err);
-                
-                // Try with less restrictive constraints if first attempt fails
-                navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-                    .then(stream => {
-                        localStream = stream;
-                        document.getElementById('localVideo').srcObject = stream;
-                        updateCallStatus('Camera/mic ready');
-                    })
-                    .catch(err => {
-                        showError('Could not access camera/microphone. Please check permissions.');
-                        callButton.disabled = true;
-                    });
+                showError('Could not access camera/microphone. Please check permissions.');
+                callButton.disabled = true;
+                startCallBtn.disabled = true;
             });
         
+        function setupMediaToggles(stream) {
+            // Mute button
+            muteButton.addEventListener('click', () => {
+                const audioTracks = stream.getAudioTracks();
+                if (audioTracks.length > 0) {
+                    isMuted = !isMuted;
+                    audioTracks[0].enabled = !isMuted;
+                    muteButton.innerHTML = isMuted ? '<i class="fas fa-microphone-slash"></i>' : '<i class="fas fa-microphone"></i>';
+                    muteButton.title = isMuted ? 'Unmute' : 'Mute';
+                }
+            });
+            
+            // Video button
+            videoButton.addEventListener('click', () => {
+                const videoTracks = stream.getVideoTracks();
+                if (videoTracks.length > 0) {
+                    isVideoOff = !isVideoOff;
+                    videoTracks[0].enabled = !isVideoOff;
+                    videoButton.innerHTML = isVideoOff ? '<i class="fas fa-video-slash"></i>' : '<i class="fas fa-video"></i>';
+                    videoButton.title = isVideoOff ? 'Turn On Video' : 'Turn Off Video';
+                }
+            });
+        }
+        
         function handleResize() {
-            // This helps mobile browsers properly display video after orientation change
             const videos = document.querySelectorAll('video');
             videos.forEach(video => {
                 video.style.width = '100%';
@@ -468,7 +636,6 @@
                     showNotification();
                 }).catch(err => {
                     console.error('Failed to copy:', err);
-                    // Fallback for older browsers
                     copyToClipboardFallback(id);
                 });
             } else {
@@ -479,7 +646,7 @@
         function copyToClipboardFallback(text) {
             const textarea = document.createElement('textarea');
             textarea.value = text;
-            textarea.style.position = 'fixed';  // Prevent scrolling to bottom
+            textarea.style.position = 'fixed';
             document.body.appendChild(textarea);
             textarea.select();
             try {
@@ -491,8 +658,13 @@
             document.body.removeChild(textarea);
         }
         
-        // Start call button
-        callButton.addEventListener('click', () => {
+        // Start call button (big button)
+        startCallBtn.addEventListener('click', startCall);
+        
+        // Start call button (control panel)
+        callButton.addEventListener('click', startCall);
+        
+        function startCall() {
             const peerId = peerIdInput.value.trim();
             if (!peerId) {
                 showError('Please enter your friend\'s ID');
@@ -506,9 +678,14 @@
             
             updateCallStatus('Calling ' + peerId + '...');
             const call = peer.call(peerId, localStream);
+            
+            // Create data channel for chat
+            dataChannel = peer.connect(peerId);
+            setupDataChannel(dataChannel);
+            
             setupCallHandlers(call);
             toggleCallButtons(true);
-        });
+        }
         
         // End call button
         endButton.addEventListener('click', () => {
@@ -518,6 +695,78 @@
             }
         });
         
+        // Screen share button
+        screenShareButton.addEventListener('click', toggleScreenShare);
+        
+        async function toggleScreenShare() {
+            if (!isInCall) return;
+            
+            try {
+                if (screenShareButton.classList.contains('warning')) {
+                    // Stop screen share
+                    const videoTrack = localStream.getVideoTracks()[0];
+                    if (videoTrack) videoTrack.stop();
+                    
+                    // Get camera stream again
+                    const stream = await navigator.mediaDevices.getUserMedia({ 
+                        video: {
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 },
+                            facingMode: 'user'
+                        }
+                    });
+                    
+                    const videoTracks = stream.getVideoTracks();
+                    if (videoTracks.length > 0) {
+                        const sender = currentCall.peerConnection.getSenders()
+                            .find(s => s.track && s.track.kind === 'video');
+                        
+                        if (sender) {
+                            sender.replaceTrack(videoTracks[0]);
+                            localStream.removeTrack(localStream.getVideoTracks()[0]);
+                            localStream.addTrack(videoTracks[0]);
+                            document.getElementById('localVideo').srcObject = localStream;
+                        }
+                    }
+                    
+                    screenShareButton.classList.remove('warning');
+                    screenShareButton.title = 'Share Screen';
+                    screenShareButton.innerHTML = '<i class="fas fa-desktop"></i>';
+                } else {
+                    // Start screen share
+                    const screenStream = await navigator.mediaDevices.getDisplayMedia({ 
+                        video: true,
+                        audio: false
+                    });
+                    
+                    const videoTracks = screenStream.getVideoTracks();
+                    if (videoTracks.length > 0) {
+                        const sender = currentCall.peerConnection.getSenders()
+                            .find(s => s.track && s.track.kind === 'video');
+                        
+                        if (sender) {
+                            sender.replaceTrack(videoTracks[0]);
+                            localStream.removeTrack(localStream.getVideoTracks()[0]);
+                            localStream.addTrack(videoTracks[0]);
+                            document.getElementById('localVideo').srcObject = localStream;
+                        }
+                    }
+                    
+                    screenShareButton.classList.add('warning');
+                    screenShareButton.title = 'Stop Sharing';
+                    screenShareButton.innerHTML = '<i class="fas fa-times"></i>';
+                    
+                    // Handle when user stops screen share via browser UI
+                    videoTracks[0].onended = () => {
+                        toggleScreenShare();
+                    };
+                }
+            } catch (err) {
+                console.error('Screen share error:', err);
+                showError('Screen sharing failed: ' + err.message);
+            }
+        }
+        
         // Answer incoming calls
         peer.on('call', (call) => {
             if (isInCall) {
@@ -525,12 +774,18 @@
                 return;
             }
             
-            // Mobile-friendly confirmation
             updateCallStatus('Incoming call from ' + call.peer);
             const acceptCall = confirm(`Incoming call from ${call.peer}\n\nAccept?`);
             
             if (acceptCall) {
                 call.answer(localStream);
+                
+                // Set up data channel for chat
+                peer.on('connection', (conn) => {
+                    dataChannel = conn;
+                    setupDataChannel(dataChannel);
+                });
+                
                 setupCallHandlers(call);
                 toggleCallButtons(true);
             } else {
@@ -539,16 +794,65 @@
             }
         });
         
+        function setupDataChannel(channel) {
+            channel.on('open', () => {
+                console.log('Data channel opened');
+            });
+            
+            channel.on('data', (data) => {
+                addMessageToChat(JSON.parse(data), false);
+            });
+            
+            channel.on('close', () => {
+                console.log('Data channel closed');
+            });
+        }
+        
+        // Send chat message
+        sendMessageBtn.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message || !dataChannel) return;
+            
+            const messageData = {
+                text: message,
+                timestamp: new Date().toLocaleTimeString()
+            };
+            
+            dataChannel.send(JSON.stringify(messageData));
+            addMessageToChat(messageData, true);
+            messageInput.value = '';
+        }
+        
+        function addMessageToChat(message, isSent) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message');
+            messageElement.classList.add(isSent ? 'sent' : 'received');
+            messageElement.innerHTML = `
+                <div>${message.text}</div>
+                <small>${message.timestamp}</small>
+            `;
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
         function setupCallHandlers(call) {
             if (currentCall) currentCall.close();
             currentCall = call;
             isInCall = true;
             
+            // Start monitoring connection quality
+            startConnectionMonitoring(call);
+            
             call.on('stream', (remoteStream) => {
                 document.getElementById('remoteVideo').srcObject = remoteStream;
                 updateCallStatus('Connected to ' + call.peer);
-                
-                // Auto-rotate video on mobile if needed
                 handleResize();
             });
             
@@ -563,18 +867,79 @@
             });
         }
         
+        function startConnectionMonitoring(call) {
+            if (connectionInterval) clearInterval(connectionInterval);
+            
+            connectionInterval = setInterval(() => {
+                if (!call.peerConnection) return;
+                
+                const stats = call.peerConnection.getStats();
+                stats.then(report => {
+                    let localCandidate, remoteCandidate;
+                    
+                    report.forEach(stat => {
+                        if (stat.type === 'candidate-pair' && stat.nominated) {
+                            localCandidate = report.get(stat.localCandidateId);
+                            remoteCandidate = report.get(stat.remoteCandidateId);
+                        }
+                    });
+                    
+                    if (localCandidate && remoteCandidate) {
+                        updateConnectionQuality(localCandidate, 'local');
+                        updateConnectionQuality(remoteCandidate, 'remote');
+                    }
+                });
+            }, 3000);
+        }
+        
+        function updateConnectionQuality(candidate, type) {
+            const element = type === 'local' ? localConnectionQuality : remoteConnectionQuality;
+            
+            if (candidate && candidate.protocol === 'udp') {
+                // Simple quality indicator based on candidate type
+                if (candidate.candidateType === 'host') {
+                    element.textContent = '🔵';
+                    element.className = 'connection-quality good-connection';
+                } else if (candidate.candidateType === 'srflx' || candidate.candidateType === 'prflx') {
+                    element.textContent = '🟡';
+                    element.className = 'connection-quality fair-connection';
+                } else {
+                    element.textContent = '🔴';
+                    element.className = 'connection-quality poor-connection';
+                }
+            } else {
+                element.textContent = '';
+            }
+        }
+        
         function handleCallEnd() {
             document.getElementById('remoteVideo').srcObject = null;
             toggleCallButtons(false);
             updateCallStatus('Call ended');
             currentCall = null;
             isInCall = false;
+            
+            if (connectionInterval) {
+                clearInterval(connectionInterval);
+                connectionInterval = null;
+            }
+            
+            // Reset screen sharing if active
+            if (screenShareButton.classList.contains('warning')) {
+                toggleScreenShare();
+            }
+            
+            // Reset connection quality indicators
+            localConnectionQuality.textContent = '';
+            remoteConnectionQuality.textContent = '';
         }
         
         function toggleCallButtons(callActive) {
             callButton.disabled = callActive;
             endButton.disabled = !callActive;
+            startCallBtn.disabled = callActive;
             peerIdInput.disabled = callActive;
+            screenShareButton.disabled = !callActive;
         }
         
         function updateCallStatus(message) {
