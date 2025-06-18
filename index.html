@@ -384,6 +384,61 @@
             border-color: var(--primary);
         }
         
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        @media (max-width: 480px) {
+            .btn {
+                padding: 12px;
+            }
+        }
+        
+        .btn i {
+            margin-right: 8px;
+        }
+        
+        @media (max-width: 480px) {
+            .btn i {
+                margin-right: 0;
+            }
+            .btn .btn-text {
+                display: none;
+            }
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+        
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: var(--danger-dark);
+        }
+        
+        .btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+        
         .call-status {
             text-align: center;
             font-size: clamp(0.9rem, 3vw, 1.1rem);
@@ -467,9 +522,6 @@
                 </div>
                 
                 <div class="video-controls">
-                    <button class="control-btn primary" id="callButton" title="Start Call">
-                        <i class="fas fa-phone"></i>
-                    </button>
                     <button class="control-btn danger" id="endButton" disabled title="End Call">
                         <i class="fas fa-phone-slash"></i>
                     </button>
@@ -493,9 +545,10 @@
                     
                     <div class="input-group">
                         <input type="text" id="peerIdInput" placeholder="Enter friend's ID">
-                        <div class="btn-group">
-                            <button class="btn btn-primary" id="startCallBtn">Start Call</button>
-                        </div>
+                        <button class="btn btn-primary" id="startCallBtn" disabled>
+                            <i class="fas fa-phone"></i>
+                            <span class="btn-text">Start Call</span>
+                        </button>
                     </div>
                     
                     <div class="call-status" id="callStatus">Ready to connect</div>
@@ -523,7 +576,7 @@
     
     <script>
         // DOM Elements
-        const callButton = document.getElementById('callButton');
+        const startCallBtn = document.getElementById('startCallBtn');
         const endButton = document.getElementById('endButton');
         const screenShareButton = document.getElementById('screenShareButton');
         const muteButton = document.getElementById('muteButton');
@@ -536,7 +589,6 @@
         const chatMessages = document.getElementById('chatMessages');
         const messageInput = document.getElementById('messageInput');
         const sendMessageBtn = document.getElementById('sendMessageBtn');
-        const startCallBtn = document.getElementById('startCallBtn');
         const localConnectionQuality = document.getElementById('localConnectionQuality');
         const remoteConnectionQuality = document.getElementById('remoteConnectionQuality');
         
@@ -555,7 +607,6 @@
         peer.on('open', (id) => {
             console.log('My peer ID is: ' + id);
             myIdElement.textContent = id;
-            callButton.disabled = false;
             startCallBtn.disabled = false;
             updateCallStatus('Ready to call');
         });
@@ -592,7 +643,6 @@
             .catch(err => {
                 console.error('Error accessing media devices:', err);
                 showError('Could not access camera/microphone. Please check permissions.');
-                callButton.disabled = true;
                 startCallBtn.disabled = true;
             });
         
@@ -658,11 +708,8 @@
             document.body.removeChild(textarea);
         }
         
-        // Start call button (big button)
+        // Start call button
         startCallBtn.addEventListener('click', startCall);
-        
-        // Start call button (control panel)
-        callButton.addEventListener('click', startCall);
         
         function startCall() {
             const peerId = peerIdInput.value.trim();
@@ -935,9 +982,8 @@
         }
         
         function toggleCallButtons(callActive) {
-            callButton.disabled = callActive;
-            endButton.disabled = !callActive;
             startCallBtn.disabled = callActive;
+            endButton.disabled = !callActive;
             peerIdInput.disabled = callActive;
             screenShareButton.disabled = !callActive;
         }
