@@ -1,131 +1,423 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Video Chat</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Chat App</title>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        #video-container { display: flex; }
-        video { 
-            width: 50%; 
-            margin: 10px; 
-            background: #222;
-            border-radius: 8px;
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --danger: #f72585;
+            --danger-dark: #e5177b;
+            --success: #4cc9f0;
+            --gray: #6c757d;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --border-radius: 12px;
         }
-        #controls {
-            margin: 20px;
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f5f7fa;
+            color: var(--dark);
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            flex: 1;
+        }
+        
+        header {
             text-align: center;
+            margin-bottom: 30px;
         }
-        button {
-            padding: 10px 20px;
-            background: #2ea44f;
+        
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+        
+        .status {
+            font-size: 1rem;
+            color: var(--gray);
+            margin-bottom: 20px;
+        }
+        
+        .video-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .video-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .video-box {
+            position: relative;
+            background: var(--dark);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            aspect-ratio: 16/9;
+        }
+        
+        .video-box h3 {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            color: white;
+            background: rgba(0,0,0,0.5);
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .controls {
+            background: white;
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        
+        .id-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .id-label {
+            font-weight: 500;
+            margin-right: 10px;
+        }
+        
+        .id-value {
+            font-family: monospace;
+            background: var(--light);
+            padding: 8px 12px;
+            border-radius: 4px;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .copy-btn {
+            margin-left: 10px;
+            background: var(--gray);
             color: white;
             border: none;
-            border-radius: 5px;
+            padding: 8px 12px;
+            border-radius: 4px;
             cursor: pointer;
-            font-size: 16px;
+            transition: background 0.2s;
         }
-        button:disabled {
-            background: #cccccc;
+        
+        .copy-btn:hover {
+            background: #5a6268;
         }
+        
+        .input-group {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
         input {
-            padding: 10px;
-            margin-left: 10px;
-            border-radius: 5px;
+            flex: 1;
+            padding: 12px 15px;
             border: 1px solid #ddd;
-            width: 200px;
+            border-radius: var(--border-radius) 0 0 var(--border-radius);
+            font-size: 1rem;
+            outline: none;
+            transition: border 0.2s;
         }
-        #my-id {
+        
+        input:focus {
+            border-color: var(--primary);
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 0 var(--border-radius) var(--border-radius) 0;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+        
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: var(--danger-dark);
+        }
+        
+        .btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .call-status {
+            text-align: center;
+            font-size: 1.1rem;
             margin-top: 20px;
-            font-weight: bold;
+            min-height: 24px;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--primary);
+            color: white;
+            padding: 12px 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transform: translateX(200%);
+            transition: transform 0.3s ease-out;
+            z-index: 1000;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
         }
     </style>
 </head>
 <body>
-    <div id="controls">
-        <div>Your ID: <span id="my-id">Generating...</span></div>
-        <button id="callButton" disabled>Start Call</button>
-        <input type="text" id="peerIdInput" placeholder="Enter friend's ID">
+    <div class="container">
+        <header>
+            <h1>Peer Video Chat</h1>
+            <p class="status">Secure peer-to-peer video calling</p>
+        </header>
+        
+        <div class="video-container">
+            <div class="video-box">
+                <video id="localVideo" autoplay muted></video>
+                <h3>You</h3>
+            </div>
+            <div class="video-box">
+                <video id="remoteVideo" autoplay></video>
+                <h3>Friend</h3>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <div class="id-container">
+                <span class="id-label">Your ID:</span>
+                <span class="id-value" id="my-id">Generating...</span>
+                <button class="copy-btn" id="copy-btn">Copy</button>
+            </div>
+            
+            <div class="input-group">
+                <input type="text" id="peerIdInput" placeholder="Enter your friend's ID">
+                <button class="btn btn-primary" id="callButton">Start Call</button>
+                <button class="btn btn-danger" id="endButton" disabled>End Call</button>
+            </div>
+            
+            <div class="call-status" id="callStatus"></div>
+        </div>
+        
+        <footer>
+            <p>This peer-to-peer video chat works directly in your browser. No servers process your video/audio.</p>
+        </footer>
     </div>
-    <div id="video-container">
-        <video id="localVideo" autoplay muted></video>
-        <video id="remoteVideo" autoplay></video>
-    </div>
-
+    
+    <div class="notification" id="notification">Copied to clipboard!</div>
+    
     <script>
+        // DOM Elements
+        const callButton = document.getElementById('callButton');
+        const endButton = document.getElementById('endButton');
+        const peerIdInput = document.getElementById('peerIdInput');
+        const myIdElement = document.getElementById('my-id');
+        const copyButton = document.getElementById('copy-btn');
+        const callStatus = document.getElementById('callStatus');
+        const notification = document.getElementById('notification');
+        
         // Generate random peer ID
         const peer = new Peer(Math.random().toString(36).substring(2, 8));
-
+        
         let localStream;
         let currentCall;
-
+        let isInCall = false;
+        
         // Show our peer ID when ready
         peer.on('open', (id) => {
             console.log('My peer ID is: ' + id);
-            document.getElementById('my-id').textContent = id;
-            document.getElementById('callButton').disabled = false;
+            myIdElement.textContent = id;
+            callButton.disabled = false;
+            updateCallStatus('Ready to call');
         });
-
+        
         // Handle errors
         peer.on('error', (err) => {
             console.error('PeerJS error:', err);
-            alert('Error: ' + err.message);
+            showError('Connection error: ' + err.message);
         });
-
+        
         // Get user media (camera and microphone)
         navigator.mediaDevices.getUserMedia({ video: true, audio: true })
             .then(stream => {
                 localStream = stream;
                 document.getElementById('localVideo').srcObject = stream;
+                updateCallStatus('Camera/mic ready');
             })
             .catch(err => {
                 console.error('Error accessing media devices:', err);
-                alert('Could not access camera/microphone. Please check permissions.');
+                showError('Could not access camera/microphone. Please check permissions.');
+                callButton.disabled = true;
             });
-
-        // Call another peer
-        document.getElementById('callButton').addEventListener('click', () => {
-            const peerId = document.getElementById('peerIdInput').value.trim();
+        
+        // Copy ID to clipboard
+        copyButton.addEventListener('click', () => {
+            const id = myIdElement.textContent;
+            navigator.clipboard.writeText(id).then(() => {
+                showNotification();
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+            });
+        });
+        
+        // Start call button
+        callButton.addEventListener('click', () => {
+            const peerId = peerIdInput.value.trim();
             if (!peerId) {
-                alert('Please enter your friend\'s ID');
+                showError('Please enter your friend\'s ID');
                 return;
             }
             
+            if (peerId === peer.id) {
+                showError('You cannot call yourself!');
+                return;
+            }
+            
+            updateCallStatus('Calling ' + peerId + '...');
             const call = peer.call(peerId, localStream);
             setupCallHandlers(call);
-            document.getElementById('callButton').disabled = true;
+            toggleCallButtons(true);
         });
-
+        
+        // End call button
+        endButton.addEventListener('click', () => {
+            if (currentCall) {
+                currentCall.close();
+                handleCallEnd();
+            }
+        });
+        
         // Answer incoming calls
         peer.on('call', (call) => {
-            if (confirm(`Accept call from ${call.peer}?`)) {
+            const acceptCall = confirm(`Incoming call from ${call.peer}. Accept?`);
+            if (acceptCall) {
+                updateCallStatus('Incoming call from ' + call.peer);
                 call.answer(localStream);
                 setupCallHandlers(call);
-                document.getElementById('callButton').disabled = true;
+                toggleCallButtons(true);
             } else {
                 call.close();
             }
         });
-
+        
         function setupCallHandlers(call) {
             if (currentCall) currentCall.close();
             currentCall = call;
+            isInCall = true;
             
             call.on('stream', (remoteStream) => {
                 document.getElementById('remoteVideo').srcObject = remoteStream;
+                updateCallStatus('Connected to ' + call.peer);
             });
             
             call.on('close', () => {
-                document.getElementById('remoteVideo').srcObject = null;
-                document.getElementById('callButton').disabled = false;
+                handleCallEnd();
             });
             
             call.on('error', (err) => {
                 console.error('Call error:', err);
-                alert('Call error: ' + err.message);
-                document.getElementById('callButton').disabled = false;
+                showError('Call failed: ' + err.message);
+                handleCallEnd();
             });
         }
-
+        
+        function handleCallEnd() {
+            document.getElementById('remoteVideo').srcObject = null;
+            toggleCallButtons(false);
+            updateCallStatus('Call ended');
+            currentCall = null;
+            isInCall = false;
+        }
+        
+        function toggleCallButtons(callActive) {
+            callButton.disabled = callActive;
+            endButton.disabled = !callActive;
+            peerIdInput.disabled = callActive;
+        }
+        
+        function updateCallStatus(message) {
+            callStatus.textContent = message;
+        }
+        
+        function showError(message) {
+            callStatus.textContent = message;
+            callStatus.style.color = 'var(--danger)';
+            setTimeout(() => {
+                callStatus.style.color = '';
+            }, 3000);
+        }
+        
+        function showNotification() {
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 2000);
+        }
+        
         // Clean up when page is closed
         window.addEventListener('beforeunload', () => {
             if (currentCall) currentCall.close();
