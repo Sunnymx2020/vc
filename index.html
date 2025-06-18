@@ -5,19 +5,135 @@
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <style>
         #video-container { display: flex; }
-        video { width: 50%; margin: 10px; }
+        video { 
+            width: 50%; 
+            margin: 10px; 
+            background: #222;
+            border-radius: 8px;
+        }
+        #controls {
+            margin: 20px;
+            text-align: center;
+        }
+        button {
+            padding: 10px 20px;
+            background: #2ea44f;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:disabled {
+            background: #cccccc;
+        }
+        input {
+            padding: 10px;
+            margin-left: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            width: 200px;
+        }
+        #my-id {
+            margin-top: 20px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
-    <div>
-        <button id="callButton" disabled>Call</button>
-        <input type="text" id="peerIdInput" placeholder="Enter peer ID">
+    <div id="controls">
+        <div>Your ID: <span id="my-id">Generating...</span></div>
+        <button id="callButton" disabled>Start Call</button>
+        <input type="text" id="peerIdInput" placeholder="Enter friend's ID">
     </div>
     <div id="video-container">
         <video id="localVideo" autoplay muted></video>
         <video id="remoteVideo" autoplay></video>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        // Generate random peer ID
+        const peer = new Peer(Math.random().toString(36).substring(2, 8));
+
+        let localStream;
+        let currentCall;
+
+        // Show our peer ID when ready
+        peer.on('open', (id) => {
+            console.log('My peer ID is: ' + id);
+            document.getElementById('my-id').textContent = id;
+            document.getElementById('callButton').disabled = false;
+        });
+
+        // Handle errors
+        peer.on('error', (err) => {
+            console.error('PeerJS error:', err);
+            alert('Error: ' + err.message);
+        });
+
+        // Get user media (camera and microphone)
+        navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+            .then(stream => {
+                localStream = stream;
+                document.getElementById('localVideo').srcObject = stream;
+            })
+            .catch(err => {
+                console.error('Error accessing media devices:', err);
+                alert('Could not access camera/microphone. Please check permissions.');
+            });
+
+        // Call another peer
+        document.getElementById('callButton').addEventListener('click', () => {
+            const peerId = document.getElementById('peerIdInput').value.trim();
+            if (!peerId) {
+                alert('Please enter your friend\'s ID');
+                return;
+            }
+            
+            const call = peer.call(peerId, localStream);
+            setupCallHandlers(call);
+            document.getElementById('callButton').disabled = true;
+        });
+
+        // Answer incoming calls
+        peer.on('call', (call) => {
+            if (confirm(`Accept call from ${call.peer}?`)) {
+                call.answer(localStream);
+                setupCallHandlers(call);
+                document.getElementById('callButton').disabled = true;
+            } else {
+                call.close();
+            }
+        });
+
+        function setupCallHandlers(call) {
+            if (currentCall) currentCall.close();
+            currentCall = call;
+            
+            call.on('stream', (remoteStream) => {
+                document.getElementById('remoteVideo').srcObject = remoteStream;
+            });
+            
+            call.on('close', () => {
+                document.getElementById('remoteVideo').srcObject = null;
+                document.getElementById('callButton').disabled = false;
+            });
+            
+            call.on('error', (err) => {
+                console.error('Call error:', err);
+                alert('Call error: ' + err.message);
+                document.getElementById('callButton').disabled = false;
+            });
+        }
+
+        // Clean up when page is closed
+        window.addEventListener('beforeunload', () => {
+            if (currentCall) currentCall.close();
+            if (peer) peer.destroy();
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+            }
+        });
+    </script>
 </body>
 </html>
